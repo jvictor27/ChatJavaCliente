@@ -6,10 +6,6 @@ package br.edu.ifpb.pod;
 
 import br.edu.ifpb.pod.frame.ClienteFrame;
 
-/**
- *
- * @author Marcio Ballem
- */
 public class Cliente {
 
     /**

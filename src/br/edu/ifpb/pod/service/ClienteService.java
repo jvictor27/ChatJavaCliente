@@ -13,10 +13,6 @@ import java.util.logging.Logger;
 
 import br.edu.ifpb.pod.bean.ChatMessage;
 
-/**
- *
- * @author João Victor
- */
 public class ClienteService {
     
     private Socket socket;

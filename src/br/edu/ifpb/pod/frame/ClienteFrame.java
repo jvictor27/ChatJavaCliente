@@ -9,6 +9,10 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,10 +22,7 @@ import br.edu.ifpb.pod.bean.ChatMessage;
 import br.edu.ifpb.pod.bean.ChatMessage.Action;
 import br.edu.ifpb.pod.service.ClienteService;
 
-/**
- *
- * @author João Victor
- */
+
 public class ClienteFrame extends javax.swing.JFrame {
 
     private Socket socket;
@@ -54,18 +55,7 @@ public class ClienteFrame extends javax.swing.JFrame {
                 while ((message = (ChatMessage) input.readObject()) != null) {
                 	String messageText = message.getText();
                     
-                    if(!message.getAction().equals(Action.CONNECT) && !message.getAction().equals(Action.USERS_ONLINE)) {
-                    	if(message.getText().equals("bye")) {
-                    		disconnectPorcomando();
-                    	} 
-//                    	else if (messageText.startsWith("rename")) {
-//                    		renameName();
-//                    		return;
-//                    	}
-                    	System.out.println("addddddddddd");
-                    }
-                    
-                	System.out.println("QAQAQ");
+                	System.out.println("DESGRAÇA");
                 	System.out.println(message.getAction());
                     
                     Action action = message.getAction();
@@ -73,7 +63,6 @@ public class ClienteFrame extends javax.swing.JFrame {
                     if (action.equals(Action.CONNECT)) {
                         connected(message);
                     } else if (action.equals(Action.DISCONNECT)) {
-//                    	System.out.println("çççççççççlllll");
                         disconnected();
                         socket.close();
                     } else if (action.equals(Action.SEND_ONE)) {
@@ -94,7 +83,7 @@ public class ClienteFrame extends javax.swing.JFrame {
     private void connected(ChatMessage message) {
         if (message.getText().equals("NO")) {
             this.txtName.setText("");
-            JOptionPane.showMessageDialog(this, "Conexãoo não realizada!\nTente novamente com um nome diferente.");
+            JOptionPane.showMessageDialog(this, "Conexão não realizada!\nTente novamente com um nome diferente.");
             return;
         }
 
@@ -107,6 +96,7 @@ public class ClienteFrame extends javax.swing.JFrame {
         this.txtAreaReceive.setEnabled(true);
         this.btnEnviar.setEnabled(true);
         this.btnLimpar.setEnabled(true);
+        this.listOnlines.setEnabled(true);
 
         JOptionPane.showMessageDialog(this, "Você está conectado no chat!");
     }
@@ -121,6 +111,10 @@ public class ClienteFrame extends javax.swing.JFrame {
         this.txtAreaReceive.setEnabled(false);
         this.btnEnviar.setEnabled(false);
         this.btnLimpar.setEnabled(false);
+        String[] array = new String[0];
+        this.listOnlines.setEnabled(false);
+        this.listOnlines.setListData(array);
+//        this.listOnlines.setEnabled(false);
         
         this.txtAreaReceive.setText("");
         this.txtAreaSend.setText("");
@@ -141,9 +135,17 @@ public class ClienteFrame extends javax.swing.JFrame {
         
         String[] array = (String[]) names.toArray(new String[names.size()]);
         
-        this.listOnlines.setListData(array);
-        this.listOnlines.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.listOnlines.setLayoutOrientation(JList.VERTICAL);
+        System.out.println(message.getText());
+        
+        if (message.getText() != null && message.getText().equals("list")) {
+        	for(String user : array) {
+        		this.txtAreaReceive.append(user + "\n");
+        	}     	
+        } else {   
+        	this.listOnlines.setListData(array);
+        	this.listOnlines.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        	this.listOnlines.setLayoutOrientation(JList.VERTICAL);
+        }
     }
 
     /**
@@ -316,9 +318,19 @@ public class ClienteFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnConnectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectarActionPerformed
+    	if (this.txtName.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Conexão não realizada!\nDigite um nick de usuário, não use espaço. ex: de nick => Victor.");
+            return;
+        }
+    	
         String name = this.txtName.getText();
 
         if (!name.isEmpty()) {
+        	String nameSplit[] = name.split(" ");
+        	if(nameSplit.length > 1) {
+        		JOptionPane.showMessageDialog(this, "Conexão não realizada!\nO nick não pode ter espaço.");
+                return;
+        	}
             this.message = new ChatMessage();
             this.message.setAction(Action.CONNECT);
             this.message.setName(name);
@@ -331,39 +343,71 @@ public class ClienteFrame extends javax.swing.JFrame {
             this.service.send(message);
         }
     }//GEN-LAST:event_btnConnectarActionPerformed
-
-//    private void renameName() {
-//    	System.out.println("asasas");
-//    	return;
-//    }
     
     private void btnSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSairActionPerformed
         ChatMessage message = new ChatMessage();
-        message.setName(this.message.getName());
+//        message.setName(this.message.getName());
+        message.setName(this.txtName.getText());
         message.setAction(Action.DISCONNECT);
         this.service.send(message);
         disconnected();
-    }//GEN-LAST:event_btnSairActionPerformed
-    
-    private void disconnectPorcomando() {
-    	ChatMessage message = new ChatMessage();
-        message.setName(this.message.getName());
-        message.setAction(Action.DISCONNECT);
-        this.service.send(message);
-        disconnected();
-    }
+    }//GEN-LAST:event_btnSairActionPerformed   
 
     private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimparActionPerformed
         this.txtAreaSend.setText("");
     }//GEN-LAST:event_btnLimparActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
-        String text = this.txtAreaSend.getText();
-        String name = this.message.getName();
+    	Date date = new Date();
+		SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
+		Calendar data = Calendar.getInstance();
+		int horas = data.get(Calendar.HOUR_OF_DAY);
+		int minutos = data.get(Calendar.MINUTE);
+//        String name = this.message.getName();
+        String name = this.txtName.getText();
+        System.out.println(name + '\n');
+        String text = socket.getInetAddress().getHostAddress() + ":"
+				+ socket.getPort() + "/~" + name + ": " + this.txtAreaSend.getText() + " " + horas
+				+ "h" + minutos + "m " + formatador.format(date);
+    	
+    	
+        String[] textSplit = this.txtAreaSend.getText().split(" ");  
         
-        this.message = new ChatMessage();
+        if (this.txtAreaSend.getText().startsWith("rename") && textSplit.length == 2) {
+        	
+        	this.message.setAction(Action.SEND_ALL);
+
+        	
+        	name = (message.getName() + " " + textSplit[1]);
+        	this.txtName.setText(textSplit[1]);
+        	text = this.txtAreaSend.getText();
+
+        }
         
-        if (this.listOnlines.getSelectedIndex() > -1) {
+    	if (!this.txtAreaSend.getText().isEmpty() && this.txtAreaSend.getText().equals("bye")) {
+	    	ChatMessage message = new ChatMessage();
+	        message.setName(this.message.getName());
+	        message.setAction(Action.DISCONNECT);
+	        this.service.send(message);
+	        disconnected();
+	        return;
+    	}
+    	
+    	this.message = new ChatMessage();
+    	if (!this.txtAreaSend.getText().isEmpty() && this.txtAreaSend.getText().equals("list")) {
+    		this.message.setName(name);
+    		this.txtAreaReceive.append("Você disse: " + text + "\n");
+    		this.message.setAction(Action.SEND_ONE);
+    		this.message.setText(this.txtAreaSend.getText());
+            this.service.send(this.message);
+	        return;
+    	}
+    	
+    	
+        
+//        this.message = new ChatMessage();
+        
+        if (this.listOnlines.getSelectedIndex() > -1 && !text.startsWith("rename")) {
             this.message.setNameReserved((String) this.listOnlines.getSelectedValue());
             this.message.setAction(Action.SEND_ONE);
             this.listOnlines.clearSelection();
@@ -372,12 +416,16 @@ public class ClienteFrame extends javax.swing.JFrame {
         }
         
         if (!text.isEmpty()) {
+        	System.out.println(name + '\n');
             this.message.setName(name);
+//        	this.message.setName(this.txtName.getText());
+            System.out.println(this.message.getName() + '\n');
             this.message.setText(text);
 
             this.txtAreaReceive.append("Você disse: " + text + "\n");
             
             this.service.send(this.message);
+            
         }
         
         this.txtAreaSend.setText("");
