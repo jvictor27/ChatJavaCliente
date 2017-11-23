@@ -28,6 +28,8 @@ public class ClienteFrame extends javax.swing.JFrame {
     private Socket socket;
     private ChatMessage message;
     private ClienteService service;
+    
+    private String[] clientesOnline;
 
     /**
      * Creates new form ClienteFrame
@@ -146,6 +148,8 @@ public class ClienteFrame extends javax.swing.JFrame {
         names.remove(message.getName());
         
         String[] array = (String[]) names.toArray(new String[names.size()]);
+        
+        clientesOnline = array;
         
         System.out.println(message.getText());
         
@@ -385,6 +389,12 @@ public class ClienteFrame extends javax.swing.JFrame {
     	
         String[] textSplit = this.txtAreaSend.getText().split(" ");  
         
+//        if (this.txtAreaSend.getText().startsWith("send -user")) {
+//        	
+//        	text = this.txtAreaSend.getText();
+//
+//        }
+        
         if (this.txtAreaSend.getText().startsWith("rename") && textSplit.length == 2) {
         	
         	this.message.setAction(Action.SEND_ALL);
@@ -419,10 +429,32 @@ public class ClienteFrame extends javax.swing.JFrame {
         
 //        this.message = new ChatMessage();
         
-        if (this.listOnlines.getSelectedIndex() > -1 && !text.startsWith("rename")) {
+        if (this.listOnlines.getSelectedIndex() > -1 && !this.txtAreaSend.getText().startsWith("rename") && !this.txtAreaSend.getText().startsWith("send -user")) {
             this.message.setNameReserved((String) this.listOnlines.getSelectedValue());
             this.message.setAction(Action.SEND_ONE);
             this.listOnlines.clearSelection();
+        } else if (this.txtAreaSend.getText().startsWith("send -user") && !this.txtAreaSend.getText().startsWith("rename")) { 
+        	System.out.println("Aqui \n");
+        	if (textSplit.length < 3) {
+        		System.out.println("Aqui1 \n");
+        		JOptionPane.showMessageDialog(this, "Comando incorreto, exemplo do comando send -user <nomeDestinatário> <mensagem>");
+                return;
+        	} else {
+        		System.out.println("Aqui2 \n");
+        		Boolean clienteExiste = false;
+        		for (String c : clientesOnline) {
+                    if (c.equals(textSplit[2])) {
+                    	clienteExiste = true;
+                    }
+        		}
+        		if(clienteExiste) {
+        			this.message.setNameReserved((String) textSplit[2]);
+        			this.message.setAction(Action.SEND_ONE);
+        		} else {
+        			JOptionPane.showMessageDialog(this, textSplit[2] + " não está online");
+                    return;
+        		}
+        	}
         } else {
             this.message.setAction(Action.SEND_ALL);
         }
@@ -435,6 +467,7 @@ public class ClienteFrame extends javax.swing.JFrame {
             this.message.setText(text);
 
             this.txtAreaReceive.append("Você disse: " + text + "\n");
+
             
             this.service.send(this.message);
             
