@@ -64,6 +64,6 @@ public class ChatMessage implements Serializable {
         
     // Ações a serem executados pelo cliente no chat
     public enum Action {
-        CONNECT, DISCONNECT, SEND_ONE, SEND_ALL, USERS_ONLINE
+        CONNECT, DISCONNECT, SEND_ONE, SEND_ALL, USERS_ONLINE, COMMAND_ERO
     }
 }

@@ -70,6 +70,8 @@ public class ClienteFrame extends javax.swing.JFrame {
                         receive(message);
                     } else if (action.equals(Action.USERS_ONLINE)) {
                         refreshOnlines(message);
+                    } else if (action.equals(Action.COMMAND_ERO)) {
+                        commandErro(message);
                     }
                 }
             } catch (IOException ex) {
@@ -77,6 +79,16 @@ public class ClienteFrame extends javax.swing.JFrame {
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(ClienteFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+    
+    private void commandErro(ChatMessage message) {
+    	if (message.getText().equals("command_erro_111")) {
+            JOptionPane.showMessageDialog(this, "Comando incorreto, exemplo do comando send -user <nomeDestinatário> <mensagem>");
+            return;
+        } else if (message.getText().equals("command_erro_999")) {
+            JOptionPane.showMessageDialog(this, "Comando incorreto, exemplo do comando send -user <nomeDestinatário> <mensagem>");
+            return;
         }
     }
 
