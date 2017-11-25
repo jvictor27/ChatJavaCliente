@@ -57,8 +57,7 @@ public class ClienteFrame extends javax.swing.JFrame {
                 while ((message = (ChatMessage) input.readObject()) != null) {
                 	String messageText = message.getText();
                     
-                	System.out.println("DESGRAÇA");
-                	System.out.println(message.getAction());
+                	                	System.out.println(message.getAction());
                     
                     Action action = message.getAction();
                     
